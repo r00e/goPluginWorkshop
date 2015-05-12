@@ -50,7 +50,18 @@ public class goPluginWorkshop implements GoPlugin{
     }
 
     private GoPluginApiResponse handleValidation(GoPluginApiRequest request) {
-        return null;
+        HashMap<String, Object> response = new HashMap<String, Object>();
+        Map requestBody = (Map) new GsonBuilder().create().fromJson(request.requestBody(), Object.class);
+
+        if(!requestBody.containsKey("script") ||
+                ((Map)requestBody.get("script")).get("value") == null ||
+                ((String)((Map)requestBody.get("script")).get("value")).trim().isEmpty()){
+            HashMap error = new HashMap();
+            error.put("script", "Script cannot be empty, please write your script...");
+            response.put("errors", error);
+        }
+
+        return createResponse(response);
     }
 
     private GoPluginApiResponse handleGetConfigRequest() {
@@ -61,6 +72,10 @@ public class goPluginWorkshop implements GoPlugin{
 
         response.put("script", fieldProperty);
 
+        return createResponse(response);
+    }
+
+    private GoPluginApiResponse createResponse(final HashMap<String, Object> response) {
         return new GoPluginApiResponse() {
             @Override
             public int responseCode() {
