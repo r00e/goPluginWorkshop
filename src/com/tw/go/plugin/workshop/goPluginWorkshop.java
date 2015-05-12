@@ -8,6 +8,7 @@ import com.thoughtworks.go.plugin.api.annotation.Extension;
 import com.thoughtworks.go.plugin.api.exceptions.UnhandledRequestTypeException;
 import com.thoughtworks.go.plugin.api.request.GoPluginApiRequest;
 import com.thoughtworks.go.plugin.api.response.GoPluginApiResponse;
+import org.apache.commons.io.IOUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +47,16 @@ public class goPluginWorkshop implements GoPlugin{
     }
 
     private GoPluginApiResponse handleView() {
-        return null;
+        HashMap view = new HashMap();
+        view.put("displayValue", "plugin workshop script");
+        try{
+            view.put("template", IOUtils.toString(getClass().getResourceAsStream("/view/task.html"), "UTF-8"));
+        } catch(Exception e){
+            String errorMsg = "Failed to find template: " + e.getMessage();
+            view.put("exception", errorMsg);
+            return createResponse(500, view);
+        }
+        return createResponse(200, view);
     }
 
     private GoPluginApiResponse handleValidation(GoPluginApiRequest request) {
@@ -61,7 +71,7 @@ public class goPluginWorkshop implements GoPlugin{
             response.put("errors", error);
         }
 
-        return createResponse(response);
+        return createResponse(200, response);
     }
 
     private GoPluginApiResponse handleGetConfigRequest() {
@@ -72,14 +82,14 @@ public class goPluginWorkshop implements GoPlugin{
 
         response.put("script", fieldProperty);
 
-        return createResponse(response);
+        return createResponse(200, response);
     }
 
-    private GoPluginApiResponse createResponse(final HashMap<String, Object> response) {
+    private GoPluginApiResponse createResponse(final int code, final HashMap<String, Object> response) {
         return new GoPluginApiResponse() {
             @Override
             public int responseCode() {
-                return 200;
+                return code;
             }
 
             @Override
